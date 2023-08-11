@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager | Time Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+    <main>
+        <h1>Task Manager App Project</h1>
+        <div class="features">
+            <button class="add-btn">Add Task</button>
+            <div name="select-task" class="search-container">
+                <input type="text" placeholder="Search Task..." class="search-input" />
+                <ion-icon name="search"></ion-icon>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr class="table-header__tr">
+                    <th class="table-props">Status</th>
+                    <th class="table-props">Name</th>
+                    <th class="table-props">Duration</th>
+                    <th class="table-props">Due Date</th>
+                </tr>
+                <td class="divider"></td>
+                <tr class="filters">
+                    <td class="dropdown__container">
+                        <button class="filter-btn">
+                            <ion-icon name="add"></ion-icon>
+                            Filter
+                        </button>
+
+                        <ul class="filters__dropdown dropdown">
+                            <h3>Filter By:</h3>
+                            <li class="filter-option">
+                                <ion-icon name="text"></ion-icon>
+                                <p>Title</p>
+                            </li>
+                            <li class="filter-option">
+                                <ion-icon name="ellipsis-horizontal-circle-outline"></ion-icon>
+                                <p>Status</p>
+                            </li>
+                            <li class="filter-option">
+                                <ion-icon name="time-outline"></ion-icon>
+                                <p>Duration</p>
+                            </li>
+                        </ul>
+
+                        <div class="filters__filter-title dropdown">
+                            <h3>Filter by title:</h3>
+
+                            <form class="dropdown-form">
+                                <input 
+                                    type="text"
+                                    placeholder="enter a task name"
+                                    name="filter-title"
+                                    id="filter-title"
+                                    maxlength="100"
+                                >
+                            </form>
+                        </div>
+
+                        <ul class="filters__filter-status dropdown">
+                            <h3>Filter By Status:</h3>
+                            <li class="filter-option">
+                                <ion-icon name="ellipse-outline"></ion-icon>
+                                <p>To-do</p>
+                            </li>
+                            <li class="filter-option">
+                                <ion-icon name="ellipsis-horizontal-circle-outline"></ion-icon>
+                                <p>In Progress</p>
+                            </li>
+                            <li class="filter-option">
+                                <ion-icon name="checkmark-circle-outline"></ion-icon>
+                                <p>Checked</p>
+                            </li>
+                        </ul>
+                        
+                        <ul class="filters__filter-duration dropdown">
+                             <h3>Filter by Duration:</h3>
+
+                            <form class="dropdown-form">
+                                <input 
+                                    type="text"
+                                    placeholder="2 weeks"
+                                    name="filter-date"
+                                    id="filter-date"
+                                >
+                            </form>
+                        </ul>
+                    </td>
+                    
+                </tr>
+            </thead>
+            <tbody class="table__tasks">
+            </tbody>
+        </table>    
+    </main>
+
+    <footer>
+        <h2>Made by AsherCode 2023</h2>
+        <a href="https://github.com/Alpha18-coder" target="_blank">
+            <ion-icon name="logo-github"></ion-icon>
+        </a>
+    </footer>
+
+    <div class="overlay" id="overlay">
+            <div class="modal">
+                <form class="task-form">
+                    <label for="task">
+                        Name of the Task:
+                        <input 
+                            type="text" 
+                            name="task" 
+                            id="task"
+                            required
+                            maxlength="100"
+                        >
+                    </label>
+
+                    <label for="due-date">
+                        Due Date:
+                        <input 
+                            type="datetime-local" 
+                            name="date" 
+                            id="due-date"
+                            required
+                            value="2023-08-03T22:00"
+                        >
+                    </label>
+
+                    <label for="description">
+                        Description:
+                        <textarea 
+                        class="description"
+                        name="description"
+                        id="description"
+                        ></textarea>
+                    </label>
+
+                    <div class="color-picker">
+                        <h4 class="color-picker__title">Custom Color</h4>
+
+                        <div class="color-container">
+                            <span class="color" style="background-color: hsl(9, 100%, 64%);" data-name="orange" data-value="hsl(9, 100%, 86%)"></span>
+                            <span class="color" style="background-color: hsl(257, 79%, 64%);" data-name="purple" data-value="hsl(257, 79%, 86%)"></span>
+                            <span class="color" style="background-color: hsl(150, 45%, 54%);" data-name="green" data-value="hsl(150, 45%, 82%)"></span>
+                            <span class="color" style="background-color: hsl(42, 90%, 60%);" data-name="yellow" data-value="hsl(42, 90%, 82%)"></span>
+                            <span class="color" style="background-color: hsl(211, 76%, 55%);" data-name="blue" data-value="hsl(211, 76%, 86%)"></span>
+                        </div>
+                    </div>
+
+                    <button class="submit-btn">Submit</button>
+                </form>
+            </div>
+    </div>
+
+    <script src="./script.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+</body>
+</html>
