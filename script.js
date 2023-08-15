@@ -70,7 +70,7 @@ function normalDropdown (id) { return `
         <span>delete</span>
         <ion-icon name="trash"></ion-icon>
     </li>
-    <li onclick="showDescription(${id})">
+    <li class="desc-option show" onclick="toggleDescription(${id})">
         <span>show desc.</span>
         <ion-icon name="document-text"></ion-icon>
     </li>
@@ -165,13 +165,25 @@ function validateInput(el){
     return p;
 }
 
-function showDescription(selectedTask){
-    // para cerrar la descripcion, agrega una "X" dentro.
+function toggleDescription(selectedTask){
     const dropdown = $('.task__dropdown', selectedTask);
     const description = $('.task__fulldescription', selectedTask);
+    const isShowingDesc = $('.desc-option.show', dropdown);
+    
+    isShowingDesc
+    ? isShowingDesc.className = "desc-option"
+    : $('.desc-option', dropdown).className = 'desc-option show';
+        
+    $('.desc-option', dropdown).innerHTML = `
+    <span>${isShowingDesc ? 'Hide' : 'Show'} desc.</span>
+    <ion-icon 
+        name="${isShowingDesc ? 'eye-off' : 'document-text'}"
+    ></ion-icon>`;
 
     if(description.textContent){
-        description.classList.add('active');  
+        console.log(description)
+        description.classList.toggle('expanded');  
+        selectedTask.classList.toggle('expanded');  
     } else {
         alert("You didn't add a description");
     }
@@ -358,16 +370,6 @@ function buildEditTemplate(task){
     const date = $('.task__duedate', task).textContent;
 
     editView.append( 
-        createElement(
-            "td", 
-            { 
-                className: "task__status", 
-                dataTooltip: "change status", 
-                onclick: () => editStatus(task.id) 
-            }, 
-            `<ion-icon name="ellipse-outline"></ion-icon>`
-        ),
-
         createElement("td", {}, `
             <input 
                 class="edit__title" 

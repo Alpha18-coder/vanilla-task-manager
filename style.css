@@ -43,8 +43,6 @@ button {
     font-family: DM Sans;
     font-size: 0.8rem;
     color: white;
-    /* width: 104px;
-    height: 34px; */
     border-radius: 4px;
     border: none;
     outline: none;
@@ -58,7 +56,6 @@ td,
 th {
     font-family: 'Poppins';
     font-size: 0.7rem;
-    /*1.2rem at full-screen size*/
     line-height: 15px;
     opacity: 90%;
 }
@@ -195,9 +192,9 @@ thead {
 }
 
 .task {
-    padding: 10px;
-    height: 15vh;
+    padding: 0px 10px;
     display: grid;
+    height: 17vh;
     grid-template-columns: repeat(5, 1fr) auto;
     align-items: center;
     background: hsla(0, 0%, 90%, 1);
@@ -210,31 +207,28 @@ thead {
     cursor: pointer;
     text-align: center;
     position: relative;
+    z-index: 999;
 }
 
 /* Estilos del tooltip */
 .task__status::before {
     content: attr(data-tooltip);
     position: absolute;
-    /* width: 85px; */
-    width: 60px;
+    width: 50px;
     justify-content: center;
     align-items: center;
-    top: 24px;
-    left: 0em;
-    /* font-size: 0.9em; */
+    top: 25px;
+    left: -10px;
     font-size: 0.8em;
-    /* padding: 1px 5px; */
+    line-height: 11px;
     padding: 2px;
     opacity: 0; /* ocultar por defecto */
     color: white;
     background: var(--black);
     border-radius: 4px;
-    z-index: 997;
 }
 
 .task__status:hover::before {
-    /* asignar la animación al pasar el cursor */
     animation: fade-in 0.3s forwards;
 }
 
@@ -256,12 +250,58 @@ thead {
 
 .task__fulldescription {
     grid-column: 1 / span 6;
-    margin-top: 10px;
+
+    display: none; /* hides the content */
+    margin-top: -15%; /* position of the content */
+    z-index: -1; /* hides content during transition */
+
     text-align: left;
-    display: none;
+    word-break: break-all;
     height: 10vh;
-    width: 90%;
+    width: 95%;
+    border: 1px solid hsla(0, 0%, 50%, 0.6);
+    border-radius: 5px;
+    padding: 2px;
+    user-select: none;
 }
+
+.task__fulldescription.expanded{
+    display: flex;
+    margin-top: 20px;
+    animation: expand-description 1s ease-in-out;
+    z-index: 1;
+}
+
+.task.expanded {
+    animation: expand-box 0.1s ease-in-out;
+    height: max-content;
+}
+
+@keyframes expand-description {
+    0% {
+        display: flex;
+        margin-top: -15%;
+        z-index: -1;
+        opacity: 0;
+    }
+
+    100% {
+        z-index: 1;
+        margin-top: 20px;
+        opacity: 1;
+    }
+}
+
+@keyframes expand-box {
+    0% {
+        height: 15vh;
+    }
+
+    100% {
+        height: max-content;
+    }
+}
+
 
 .task-btn {
     z-index: 1;
@@ -281,22 +321,22 @@ thead {
     display: grid;
     grid-template-columns: auto 1fr 1fr auto;
     grid-template-rows: auto 1fr;
-    gap: 5px;
+    gap: 10px;
+    height: max-content;
+}
+
+.edit>td {
+    width: 100%;
 }
 
 .edit > td > input {
     border: 1px solid black;
     width: 100%;
     height: 25px;
-    padding: 0 5px;
-}
-
-.edit > .task__status > ion-icon {
-    font-size: 1.8rem;
 }
 
 .edit__description {
-    padding: 0;
+    height: 10vh;
     grid-column: 1 / span 4;
 }
 
@@ -308,7 +348,6 @@ thead {
 }
 
 /* aligning the icons */
-.edit>.task__status,
 .edit>.dropdown__container {
     height: 28px;
     display: flex;
@@ -351,7 +390,7 @@ footer {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80vw; /*40vw at full-screen size */
+    width: 80vw;
     height: 80vh;
     border-radius: 20px;
     background: white;
@@ -403,6 +442,11 @@ textarea {
     transform: scale(1.1);
 }
 
+.color:focus {
+    transform: scale(1.1);
+    outline: 2px solid var(--black);
+}
+
 .submit-btn {
     height: 30px;
 }
@@ -420,7 +464,6 @@ textarea {
     justify-content: space-around;
     position: absolute;
     top: 40px;
-    /* width: 180px; */
     width: 170px;
     background-color: #fff;
     border-radius: 5px;
@@ -438,7 +481,6 @@ textarea {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* font-size: 1rem; */
     font-size: 0.8rem;
     cursor: pointer;
     padding: 5px 12px;
@@ -601,15 +643,24 @@ textarea {
     }
 
     .table__tasks {
-        height: 34vh;
+        height: 28vh;
     }
 
     .task {
-        grid-template-columns: 0.5fr repeat(3, 1fr) 0.5fr;        grid-template-columns: 0.5fr repeat(3, 1fr) 0.5fr;
+        padding: 20px 10px;
+        grid-template-columns: 0.5fr repeat(3, 1fr) 0.5fr;        
     }
 
     .task__status>ion-icon {
         font-size: 2rem;
+    }
+
+    .task__status::before {
+        width: 100px;
+        top: 25px;
+        font-size: 0.8em;
+        line-height: 15px;
+        padding: 2px;
     }
 
     .edit {
@@ -620,14 +671,15 @@ textarea {
         padding: 15px;
     }
 
-    .edit>.task__status>ion-icon {
-        font-size:  2.1rem;
+
+    .edit__description {
+        height: 12vh;
     }
 
     .task__status::before {
-        width: 72px;
+        width: 60px;
         top: 28px;
-        left: -2em;
+        left: -1em;
     }
 
     .dropdown {
@@ -760,7 +812,7 @@ textarea {
     }
 
     .task {
-        padding: 20px;
+        padding: 20px 10px;
         grid-template-columns: 0.8fr repeat(3, 1fr) 0.6fr;
     }
 
@@ -769,10 +821,10 @@ textarea {
     }
 
     .task__status::before {
-        width: 120px;
-        top: 33px;
-        left: -3.5em;
-        padding: 5px;
+        width: 65px;
+        top: 27px;
+        left: -1.3em;
+        line-height: 15px;;
     }
 
     .edit {
@@ -781,14 +833,8 @@ textarea {
     }
 
     .edit__description {
-        width: 100%;
         padding: 0;
         grid-column: 1 / span 4;
-    }
-
-    .edit>td>input,
-    textarea {
-        width: 100%
     }
 
     .dropdown {
