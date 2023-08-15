@@ -257,9 +257,10 @@ thead {
 .task__fulldescription {
     grid-column: 1 / span 6;
     margin-top: 10px;
+    text-align: left;
     display: none;
     height: 10vh;
-    width: 100%;
+    width: 90%;
 }
 
 .task-btn {
@@ -667,7 +668,7 @@ textarea {
 /* LAPTOP, PC */
 @media (min-width: 813px) {
     button {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
     }
 
     ion-icon {
@@ -676,7 +677,7 @@ textarea {
 
     td,
     th {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
     }
 
     input,
@@ -723,7 +724,7 @@ textarea {
     }
 
     .table-props {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
     }
 
     .filter-btn {

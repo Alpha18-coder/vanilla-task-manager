@@ -1,4 +1,4 @@
-const $ = (selector, el = document) => el.querySelector(selector);
+const $ = (selector, el=document) => el.querySelector(selector);
 
 const searchContainer = $('.search-container');
 const addBtn = $('.add-btn');
@@ -11,46 +11,12 @@ const dropdownContainer = $('.dropdown__container', filterCol);
 const filterBtn = $('.filter-btn', dropdownContainer);
 const filterDropdown = $('.filters__dropdown', dropdownContainer);
 
-
 const inputs = taskForm.querySelectorAll('input, textarea');
 const colors = Array.from($('.color-container').children);
 const filterOptions = Array.from(filterDropdown.querySelectorAll('li'));
 
 let taskList = JSON.parse(localStorage.getItem('tasklist')) || [];
 let viewMode;
-let index = 0;
-let hex;
-
-const normalDropdown = function (id) { return `
-    <li onclick="CRUD.edit(${id})">
-        <span>edit</span>
-        <ion-icon name="create"></ion-icon>
-    </li>
-    <li onclick="CRUD.delete(${id})">
-        <span>delete</span>
-        <ion-icon name="trash"></ion-icon>
-    </li>
-    <li onclick="showDescription(${id})">
-        <span>show desc.</span>
-        <ion-icon name="document-text"></ion-icon>
-    </li>
-`}
-
-const editDropdown = function (id) {
-    return `
-    <li onclick="updateTask(${id});">
-        <span>save</span>
-        <ion-icon name="save"></ion-icon>
-    </li>
-    <li onclick="cancelEdit(${id})">
-        <span>cancel</span>
-        <ion-icon name="close-circle"></ion-icon>
-    </li>
-    <li onclick="CRUD.delete(${id})">
-        <span>delete</span>
-        <ion-icon name="trash"></ion-icon>
-    </li>
-`}
 
 renderList(taskList);
 
@@ -73,16 +39,7 @@ overlay.onclick = closeModal;
 
 // DROPDOWNS
 
-function toggleDropdown(dropdown) {
-/* problem: 
-1) if you add ` console.log(event.target.closest('.dropdown'))`
-in `handleCloseDropdown`. you'll notice you are calling this event
-listener twice!!! 
-
-2) the filter features still rely on `closeDropdown()`
-
-3) learn the importance of removing event listeners.
-*/
+function openDropdown(dropdown) {
     if(!dropdown.classList.contains('active') && dropdown !== null){
         dropdown.classList.add('active');
     }
@@ -104,6 +61,37 @@ function closeDropdown(dropdown){
     }
 }
 
+function normalDropdown (id) { return `
+    <li onclick="CRUD.edit(${id})">
+        <span>edit</span>
+        <ion-icon name="create"></ion-icon>
+    </li>
+    <li onclick="CRUD.delete(${id})">
+        <span>delete</span>
+        <ion-icon name="trash"></ion-icon>
+    </li>
+    <li onclick="showDescription(${id})">
+        <span>show desc.</span>
+        <ion-icon name="document-text"></ion-icon>
+    </li>
+`}
+
+function editDropdown (id) {
+    return `
+    <li onclick="updateTask(${id});">
+        <span>save</span>
+        <ion-icon name="save"></ion-icon>
+    </li>
+    <li onclick="cancelEdit(${id})">
+        <span>cancel</span>
+        <ion-icon name="close-circle"></ion-icon>
+    </li>
+    <li onclick="CRUD.delete(${id})">
+        <span>delete</span>
+        <ion-icon name="trash"></ion-icon>
+    </li>
+`}
+
 //UTILITIES
 const compose = (fn1, fn2) => fn1(fn2);
 
@@ -112,9 +100,6 @@ function createElement(tag, attrs, html) {
     Object.assign(element, attrs);
     element.innerHTML = html;
 
-    if(attrs.onclick){
-        element.setAttribute("onclick", attrs.onclick)
-    }
     // Set the data-tooltip attribute if it exists in attrs object
     if (attrs.dataTooltip) {
         element.setAttribute("data-tooltip", attrs.dataTooltip);
@@ -140,7 +125,7 @@ function createDropdownCell(id, getContent){
 
     btnTask.addEventListener("click", (e) => {
         if (e.target === btnTask) {
-        toggleDropdown(ulDropdown);
+        openDropdown(ulDropdown);
         }
     });
 
@@ -152,19 +137,13 @@ function createDropdownCell(id, getContent){
 }
 
 function createFilterBtn(type, filter) {
-    const td = document.createElement('td');
-    td.classList.add('filter');
+    const td = createElement("td", {className: "filter"}, `
+    <button class="filter-btn">
+        ${type} : ${filter}
+    </button>
+    `)
 
-    const button = document.createElement('button');
-    button.classList.add('filter-btn');
-
-    const p = document.createElement('p');
-    p.textContent = `${type}: ${filter}`;
-
-    button.appendChild(p);
-    td.appendChild(button);
     filterCol.appendChild(td);
-
 }
 
 function generateUniqueID() {
@@ -186,6 +165,73 @@ function validateInput(el){
     return p;
 }
 
+function showDescription(selectedTask){
+    // para cerrar la descripcion, agrega una "X" dentro.
+    const dropdown = $('.task__dropdown', selectedTask);
+    const description = $('.task__fulldescription', selectedTask);
+
+    if(description.textContent){
+        description.classList.add('active');  
+    } else {
+        alert("You didn't add a description");
+    }
+
+    closeDropdown(dropdown);
+}
+
+function cancelEdit(task) {
+    task.classList.remove('edit');
+
+    // Restore the original state
+    task.innerHTML = viewMode;
+    renderList(taskList);
+}
+
+function formatDate(date) {
+    let inputDate = new Date(date);
+
+    const day = inputDate.getDate().toString().padStart(2, '0');
+    const month = (inputDate.getMonth() + 1).toString().padStart(2, '0');
+    const year = inputDate.getFullYear().toString();
+    const hour = inputDate.getHours() % 12 || 12;
+    const minute = inputDate.getMinutes().toString().padStart(2, '0');
+    const amPm = inputDate.getHours() >= 12 ? 'PM' : 'AM';
+
+    return `${day}/${month}/${year} ${hour}:${minute}${amPm}`;
+}
+
+function unformatDate(str) {
+    let [day, month, year] = str.slice(0, 10).split('/');
+    return `${year}-${month}-${day}`;
+}
+
+function dateEstimation (date) {
+    const now = new Date().getTime(); 
+    const deadline = new Date(date).getTime(); 
+    const diffDays = Math.floor(Math.abs(deadline - now) / 86400000); 
+
+    if (deadline < now) {
+        return "Finished"; // if the deadline has passed, return "Finished"
+    } else if (diffDays === 0) {
+        return "Today"; // if the difference is zero, return "Today"
+    } else if (diffDays === 1) {
+        return "Tomorrow"; // if the difference is one, return "Tomorrow"
+    } else if (diffDays < 30) {
+        return `${diffDays} days`; // if the difference is less than 30, return the number of days
+    } else if (diffDays < 365) {
+        const diffMonths = Math.floor(diffDays / 30); // get the difference in months
+        return diffMonths === 1 ? "next month" : `${diffMonths} months`; // return the number of months or "next month"
+    } else {
+        const diffYears = Math.floor(diffDays / 365); // get the difference in years
+        return diffYears === 1 ? "next year" : `${diffYears} years`; // return the number of years or "next year"
+    }
+}
+
+function saveChanges(ul){
+    localStorage.setItem('tasklist', JSON.stringify(ul));
+    renderList(ul);
+}
+
 // CRUD
 
 const CRUD = {
@@ -193,15 +239,14 @@ const CRUD = {
     edit: (selectedTask) => buildEditTemplate(selectedTask),
     delete: (selectedTask) => {
         taskList = taskList.filter((x) => x.id !== selectedTask.id);
-        renderList(taskList);
+        saveChanges(taskList);
     },
-    filter: (type, filter) => {
+    filter: (type, input) => {
         const filters = {
-        title: (task) => task.title.toLowerCase().includes(filter),
-        status: (task) => task.status.includes(filter.toLowerCase()),
-        duration: (task) => task.duration.toLowerCase() === filter.toLowerCase()
+        title: (task) => task.title.toLowerCase().includes(input),
+        status: (task) => task.status.toLowerCase() === input.toLowerCase(),
+        duration: (task) => task.duration.toLowerCase() === input.toLowerCase()
         };
-        
         return taskList.filter(filters[type]);
     }
 }
@@ -222,15 +267,14 @@ function handleFilter(event) {
     if (filterFunction) {
         filterFunction();
     } else {
-        console.log("Invalid filter option");
+        console.error("Invalid filter option");
     }
 }
 
 function filterByTitle(){
-    const dropdown = dropdownContainer.querySelector('.filters__filter-title');
-    const filterForm = dropdown.querySelector('.dropdown-form');
-    toggleDropdown(dropdown);
-
+    const dropdown = $('.filters__filter-title', dropdownContainer);
+    const filterForm = $('.dropdown-form', dropdown);
+    openDropdown(dropdown);
 
     function handleLocalFilter(event){
         event.preventDefault();
@@ -251,12 +295,13 @@ function filterByTitle(){
 }
 
 function filterByStatus(){
-    const dropdown = document.querySelector('.filters__filter-status');
+    const dropdown = $('.filters__filter-status');
     const statusOptions = dropdown.querySelectorAll('li');
-    toggleDropdown(dropdown);
+    openDropdown(dropdown);
 
     function handleLocalFilter(event){
         const filterStatus = event.target.innerText;
+        console.log(filterStatus)
         createFilterBtn('Status', filterStatus);
         const filteredArray = CRUD.filter('status', filterStatus);
         renderList(filteredArray);
@@ -272,9 +317,9 @@ function filterByStatus(){
 }
 
 function filterByDuration(){
-    const dropdown = document.querySelector('.filters__filter-duration');
-    const filterForm = dropdown.querySelector('.dropdown-form');
-    toggleDropdown(dropdown);
+    const dropdown = $('.filters__filter-duration');
+    const filterForm = $('.dropdown-form', dropdown);;
+    openDropdown(dropdown);
 
     function handleLocalFilter(event){
         event.preventDefault();
@@ -294,40 +339,23 @@ function filterByDuration(){
     filterForm.addEventListener('submit', handleLocalFilter);
 }
 
-const createTask = ({task, date}) => {
-    const formattedDate = formatDate(date);
+function searchTask(){
+    const input = $('input', searchContainer);
+    const filterTask = input.value.toLocaleLowerCase();
 
-    return { 
-        id: generateUniqueID(), 
-        title: task, 
-        dueDate: formattedDate, 
-        duration: dateEstimation(date),
-        status: 'to-do',
-        color: hex ? hex : '#e6e6e6',
-    }
-}
-
-function editStatus(task) {
-  const taskStatus = task.querySelector('.task__status ion-icon');
-  const icon = ['ellipse-outline', 'ellipsis-horizontal-circle-outline', 'checkmark-circle-outline'];
-
-  if (index >= icon.length-1) {
-    index = 0;
-  } else {
-    index++;
-  }
-  
-  taskStatus.name = icon[index];
+    const filteredArray = CRUD.filter('title', filterTask);
+    renderList(filteredArray)
 }
 
 function buildEditTemplate(task){
-    // Storing Original State
+    // Storing Original State HTML
     viewMode = task.innerHTML;
 
     task.classList.add('edit');
     const editView = document.createDocumentFragment();
-    const title = task.querySelector('.task__name').textContent;
-    const desc = task.querySelector('p').textContent;
+    const title = $('.task__name', task).textContent;
+    const desc = $('p', task).textContent;
+    const date = $('.task__duedate', task).textContent;
 
     editView.append( 
         createElement(
@@ -335,129 +363,96 @@ function buildEditTemplate(task){
             { 
                 className: "task__status", 
                 dataTooltip: "change status", 
-                onclick: onclick=`editStatus(${task.id})` 
-            }, `
-            <ion-icon name="ellipse-outline"></ion-icon>
-        `),
+                onclick: () => editStatus(task.id) 
+            }, 
+            `<ion-icon name="ellipse-outline"></ion-icon>`
+        ),
+
         createElement("td", {}, `
-            <input class="edit__title" value="${title}" name="title"/>
+            <input 
+                class="edit__title" 
+                name="title"
+                value="${title}" 
+            />
         `),
+
         createElement("td", {}, `
-            <input class="edit__due-date" type="date" name="dueDate" />
+            <input 
+                class="edit__duedate" 
+                type="date" 
+                name="date"
+                value="${unformatDate(date)}"
+            />
         `),
+
         createDropdownCell(task.id, editDropdown),
-        createElement("td",{ className: "edit__description"}, `
-          <textarea name="description">${desc}</textarea>
-        `),
+
+        createElement(
+            "td",
+            { className: "edit__description"}, 
+            `<textarea name="description">${desc}</textarea>`
+        ),
     );
 
     task.innerHTML = '';
     task.append(editView);
 }
 
-function showDescription(selectedTask){
-    const dropdown = selectedTask.querySelector('.task__dropdown');
-    const description = selectedTask.querySelector('.task__fulldescription');
+function editStatus(task) {
+  const obj = taskList.find((el) => el.id === task.id);
+  const newStatus = ['to-do', 'In Progress', 'Completed'];
+  let index = newStatus.indexOf(obj.status);
 
-    if(description.textContent){
-        description.classList.add('active');  
-    } else {
-        alert("You didn't add a description");
-    }
+  if (index >= newStatus.length-1) {
+    index = 0;
+  } else {
+    index++;
+  }
 
-    closeDropdown(dropdown);
-}
-
-function cancelEdit(task) {
-    task.classList.remove('edit');
-
-    // Restore the original state
-    task.innerHTML = viewMode;
-    renderList(taskList);
-}
-
-function searchTask(){
-    const input = searchContainer.querySelector('input');
-    const filterTask = input.value.toLocaleLowerCase();
-
-    const filteredArray = CRUD.filter('title', filterTask);
-    renderList(filteredArray)
+  obj.status = newStatus[index];
+  saveChanges(taskList);
 }
 
 function updateTask(task) {
     let fields = task.querySelectorAll('input, textarea');
-    let previousTask = taskList.find(el => el.id === task.id);
-    let hasData = Array.from(fields).every(el => el.value);
-
-    if(hasData){
-        fields.forEach(({name, value}) => previousTask[name] = value);
-        let date = formatDate(previousTask.dueDate); // dd/mm/YYYY
-        let deadline = previousTask.dueDate;
-        previousTask.dueDate = date;
-        previousTask.duration = dateEstimation(deadline);
-        renderList(taskList);
-    } else {
-        alert("Please complete all the fields");
-    }
-}
-
-function formatDate(date) {
-    let inputDate = new Date(date);
-
-    const day = inputDate.getDate().toString().padStart(2, '0');
-    const month = (inputDate.getMonth() + 1).toString().padStart(2, '0');
-    const year = inputDate.getFullYear().toString();
-    const hour = inputDate.getHours() % 12 || 12;
-    const minute = inputDate.getMinutes().toString().padStart(2, '0');
-    const amPm = inputDate.getHours() >= 12 ? 'PM' : 'AM';
-
-    return `${day}/${month}/${year} ${hour}:${minute}${amPm}`;
-}
-
-const dateEstimation = (dueDate) => {
-    const now = new Date();
-    const deadline = new Date(dueDate);
-
-    var diffYears = deadline.getFullYear() - now.getFullYear(); 
-    var diffMonths = deadline.getMonth() - now.getMonth(); 
-    var diffDays = deadline.getDate() - now.getDate(); 
-
-
-    if(diffYears !== 0) {
-        return diffYears > 1 ? `${diffYears} years`:`${diffYears} year`
-    } 
+    let prevTaskState = taskList.find(el => el.id === task.id);
     
-    if(diffMonths !== 0 ) {
-        return diffMonths > 1 ? `${diffMonths} months`:`next month`
-    }
-
-    if(diffDays > 1 ) {
-        return `${diffDays} days`
-    } else if(diffDays === 1) {
-        return "Tomorrow"
-    } else if (diffDays === 0) {
-       return 'Today';
-    } else {
-        return "Finished"
-    }
+    fields.forEach(({name, value}) => prevTaskState[name] = value);
+    let dateObj = new Date(prevTaskState.date);
+    dateObj.setDate(dateObj.getDate() + 1)
+    prevTaskState.date = formatDate(dateObj); // dd/mm/YYYY
+    prevTaskState.duration = dateEstimation(dateObj);
+    saveChanges(taskList);
 }
 
 // MAIN CODE
 function renderList(ul) {
-    localStorage.setItem('tasklist', JSON.stringify(ul));
     const fragment = document.createDocumentFragment();
-
     ul.map((task) => {
-        const {id, title, dueDate, duration, description, color } = task;
+        const {id, title, status, date, duration, description, color } = task;
 
-        const tr = createElement("tr", { className: ["task"], id, style: `background-color: ${color}`}, `
-        <td class="task__status" data-tooltip="change status" onclick="editStatus(${id})">
-            <ion-icon name="ellipse-outline"></ion-icon>
-        </td>
-        <td class="task__name">${title}</td>
-        <td class="task__duration">${duration}</td>
-        <td class="task__duedate">${dueDate}</td>
-        `);
+        const tr = createElement(
+            "tr", 
+            { 
+                className: ["task"], 
+                id, 
+                style: `background-color: ${color}`
+            }, 
+            `
+                <td class="task__status" data-tooltip="change status" onclick="editStatus(${id})">
+                ${
+                    status === "In Progress"
+                    ? `<ion-icon name="ellipsis-horizontal-circle-outline"></ion-icon>`
+                    : status === "Completed"
+                    ? `<ion-icon name="checkmark-circle-outline"></ion-icon>`
+                    : `<ion-icon name="ellipse-outline"></ion-icon>`
+                }
+                </td>
+                <td class="task__name">${title}</td>
+                <td class="task__duration">${duration}</td>
+                <td class="task__duedate">${date}</td>
+            `
+        );
 
         tr.append(
             createDropdownCell(id, normalDropdown),
@@ -468,40 +463,70 @@ function renderList(ul) {
     });
 
     taskUL.innerHTML = '';
-    hex = '';
     taskUL.appendChild(fragment);
     closeModal();
 }
 
-function getUserInput(onSubmit){
-    return function handleInput(e) {
-        e.preventDefault();
-        
-        let userInput = {};
-        inputs.forEach(({name, value}) => userInput[name] = value);
-        const data = createTask(userInput);
-        onSubmit(data);
-    }
+function createTask(onSubmit) {
+  return function handleInput(e) {
+    e.preventDefault();
+
+    // Create an object from the inputs
+    let task = Object.fromEntries(
+        Array.from(inputs).map(({ name, value }) => [name, value])
+    );
+
+    // Set the color from the selected span or default to gray
+    let selectedColor = $(".color-container .color.selected");
+    task.color = selectedColor 
+    ? selectedColor.dataset.value 
+    : "#e6e6e6";
+
+    // Format the date and add other properties
+    const dateObj = task.date;
+
+    task.date = formatDate(task.date);
+    task.status = "to-do";
+    task.id = generateUniqueID();
+    task.duration = dateEstimation(dateObj);
+
+    // Remove event listener and the selected class from all colors
+    colors.forEach(color => {
+        color.classList.remove('selected');
+        color.removeEventListener('click', () => {
+            colors.forEach(color => color.classList.remove('selected'))
+            color.classList.add('selected');
+         });
+    });
+
+    onSubmit(task);
+  };
 }
 
 function updateList(newTask) {
     taskList = taskList.length
     ? CRUD.add(taskList)(newTask) 
     : [newTask];
-    renderList(taskList);
+    saveChanges(taskList);
 }
 
-const handleSubmit = compose(getUserInput, updateList);
+const handleSubmit = compose(createTask, updateList);
 
 // EVENT LISTENERS
-colors.forEach(color => color.addEventListener('click', () => hex = color.dataset.value));
+//adds "selected" class to only one element (before submit)
+colors.forEach(color => {
+    color.addEventListener('click', () => {
+        colors.forEach(color => color.classList.remove('selected'))
+        color.classList.add('selected');
+    });
+});
 
 addBtn.addEventListener('click', openModal);
 taskForm.addEventListener('submit', handleSubmit);
 searchContainer.addEventListener('input', searchTask);
 
-filterBtn.addEventListener('click', function() {
-  toggleDropdown(filterDropdown);
+filterBtn.addEventListener('click', () => {
+  openDropdown(filterDropdown);
 });
 
 filterOptions.forEach((el) => {
